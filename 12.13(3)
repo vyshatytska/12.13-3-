@@ -1,0 +1,270 @@
+Взаимодействие с другими людьми#include <iostream>
+#include <string>
+#include <cstdlib>
+#include <fstream>
+using namespace std;
+
+#pragma once
+
+
+class HashClass {
+
+public:
+	HashClass();
+	int HashFunc(string key);
+	void AddItems(string name, string surname, string number, string dd, string mm, string yy);
+	int NumItemsInIndex(int index);
+	void PrintTable();
+	void PrintIndex(int index);
+	void RemoveValue(string name);
+private:
+
+	static const int tableSize_ = 40;
+
+	struct item {
+		string name;
+		string surname;
+		string number;
+		string dd;
+		string mm;
+		string yy;
+		item* next;
+	};
+	item* HashTable[tableSize_];
+
+
+
+};
+HashClass::HashClass()
+{
+	for (int i = 0; i < tableSize_; i++)
+	{
+		HashTable[i] = new item;
+		HashTable[i]->name = "";
+		HashTable[i]->surname = "";
+		HashTable[i]->number = "";
+		HashTable[i]->dd = "";
+		HashTable[i]->mm = "";
+		HashTable[i]->yy = "";
+		HashTable[i]->next = nullptr;
+	}
+}
+
+int HashClass::HashFunc(string key)
+{
+
+	return stoi(key);
+
+}
+
+void HashClass::AddItems(string name, string surname, string number, string dd, string mm, string yy)
+{
+	int index = HashFunc(mm);
+	int numItems = NumItemsInIndex(index);
+	item* iter = HashTable[index];
+	if (numItems == 0)
+	{
+		HashTable[index]->name = name;
+		HashTable[index]->surname = surname;
+		HashTable[index]->number = number;
+		HashTable[index]->dd = dd;
+		HashTable[index]->mm = mm;
+		HashTable[index]->yy = yy;
+	}
+	else
+	{
+		item* ptr = HashTable[index];
+		item* newPtr = new item;
+		newPtr->name = name;
+		newPtr->surname = surname;
+		newPtr->number = number;
+		newPtr->dd = dd;
+		newPtr->mm = mm;
+		newPtr->yy = yy;
+		newPtr->next = NULL;
+		while (ptr->next != NULL)
+		{
+			ptr = ptr->next;
+		}
+		ptr->next = newPtr;
+	}
+}
+int HashClass::NumItemsInIndex(int index)
+{
+	int numItems = 0;
+	item* iter = HashTable[index];
+
+	if (iter->name == "")
+	{
+		return numItems;
+	}
+	else
+	{
+		while (iter != NULL)
+		{
+			iter = iter->next;
+			numItems++;
+		}
+	}
+
+	return numItems;
+}
+void HashClass::PrintTable()
+{
+	int numItems = 0;
+
+	for (int i = 0; i < tableSize_; i++)
+	{
+		if (HashTable[i]->mm != "")
+		{
+			numItems = NumItemsInIndex(i);
+			if (numItems == 1)
+			{
+				//	cout << "---Index: " << i << " ";
+				cout << "Name: " << HashTable[i]->name << " ";
+				cout << "Surname: " << HashTable[i]->surname << " ";
+				cout << "Number: " << HashTable[i]->number << " ";
+				cout << "Day: " << HashTable[i]->dd << " ";
+				cout << "Month: " << HashTable[i]->mm << " ";
+				cout << "Year: " << HashTable[i]->yy << endl;
+			}
+			else
+			{
+				PrintIndex(i);
+			}
+
+		}
+
+	}
+}
+
+void HashClass::PrintIndex(int index)
+{
+	int numItems = NumItemsInIndex(index);
+	item* iter = HashTable[index];
+	for (int i = 0; i < numItems; i++)
+	{
+		//	cout << "  *Item Number : " << index  << "*" ;
+		cout << "Name: " << iter->name << " ";
+		cout << "Surame: " << iter->surname << " ";
+		cout << "Number: " << iter->number << " ";
+		cout << "Day: " << iter->dd << " ";
+		cout << "Month: " << iter->mm << " ";
+		cout << "Year: " << iter->yy << endl;
+
+		iter = iter->next;
+	}
+
+
+
+}
+
+
+void HashClass::RemoveValue(string name)
+{
+	int index = HashFunc(name);
+
+	item* Ptr = HashTable[index];
+	item* delPtr = NULL;
+	item* tailPtr = NULL;
+	if (HashTable[index]->name == "")
+	{
+		cout << name << " was not found in the Hash Table." << endl;
+	}
+	else if (Ptr->next == NULL && Ptr->name == name)
+	{
+		Ptr->name = "";
+		Ptr->surname = "";
+		Ptr->number = "";
+		Ptr->dd = "";
+		Ptr->mm = "";
+		Ptr->yy = "";
+		cout << name << " was the only value and was removed!" << endl;
+	}
+	else if (Ptr->next != NULL && Ptr->name == name)
+	{
+		tailPtr = Ptr;
+		Ptr = Ptr->next;
+		tailPtr->name = Ptr->name;
+		tailPtr->surname = Ptr->surname;
+		tailPtr->number = Ptr->number;
+		tailPtr->dd = Ptr->dd;
+		tailPtr->mm = Ptr->mm;
+		tailPtr->yy = Ptr->yy;
+		tailPtr->next = Ptr->next;
+
+		delete Ptr;
+		cout << name << " was the first one in the list and was removed" << endl;
+	}
+	else
+	{
+		bool inList = false;
+
+		while (Ptr != NULL)
+		{
+			if (Ptr->name == name)
+			{
+				inList = true;
+				break;
+			}
+			tailPtr = Ptr;
+			Ptr = Ptr->next;
+		}
+		if (inList)
+		{
+			tailPtr->next = Ptr->next;
+			delete Ptr;
+			cout << name << " was removed" << endl;
+		}
+		else
+		{
+			cout << name << " is not in the Hash Table " << endl;
+		}
+
+	}
+
+}
+int main()
+{
+	HashClass testObj;
+	string name;
+	string surname;
+	string number;
+	string dd;
+	string mm;
+	string yy;
+
+
+	ifstream myFile("Items.txt");
+	if (myFile.is_open())
+	{
+		while (myFile >> name >> surname >> number >> dd >> mm >> yy)
+		{
+			testObj.AddItems(name, surname, number, dd, mm, yy);
+		}
+		myFile.close();
+	}
+	else
+	{
+		cout << "Unable to open file" << endl;
+		system("pause");
+		return 0;
+	}
+	testObj.PrintTable();
+	string search;
+	cout << "Find month :";
+	cin >> search;
+	int searchIndex = testObj.HashFunc(search);
+	if (searchIndex != 0)
+	{
+		testObj.PrintIndex(searchIndex);
+	}
+	else
+	{
+		cout << " - Man whith this month of date not found" << endl;
+	}
+
+	system("pause");
+
+	return 0;
+}
